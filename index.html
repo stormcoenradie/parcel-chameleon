@@ -336,7 +336,7 @@ function vid(){
   $('vb').onclick=function(){var x=ytid($('vl').value);if(!x){$('vl').value='';$('vl').placeholder='That doesn’t look like a YouTube link';return}pv(name,x);vid()};
   if(!id){
     fetch('/api/video?q='+encodeURIComponent(name+' review'))
-      .then(function(r){return r.json()})
+      .then(function(r){return r.text().then(function(t){try{return JSON.parse(t)}catch(e){throw new Error(t.slice(0,160))}})})
       .then(function(data){
         if(data&&data.id){
           pv(name,data.id);
@@ -359,7 +359,7 @@ function pnAdd(n){var a=pnList();if(a.indexOf(n.toLowerCase())<0){a.push(n.toLow
 function pnDel(n){var a=pnList().filter(function(x){return x!==n.toLowerCase()});try{localStorage.setItem('pn',JSON.stringify(a))}catch(e){}}
 function fetchPic(name,cb){
   fetch('/api/image?q='+encodeURIComponent(name))
-    .then(function(r){return r.json()})
+    .then(function(r){return r.text().then(function(t){try{return JSON.parse(t)}catch(e){throw new Error(t.slice(0,160))}})})
     .then(function(data){cb(data&&data.url?data.url:null)})
     .catch(function(){cb(null)});
 }
@@ -370,7 +370,7 @@ function autoPic(n){
   if(pnHas(n)){if(img)img.textContent='blocked (removed)';return}
   if(img)img.textContent='Fetching…';
   fetch('/api/images?q='+encodeURIComponent(n)+'&count=3')
-    .then(function(r){return r.json()})
+    .then(function(r){return r.text().then(function(t){try{return JSON.parse(t)}catch(e){throw new Error(t.slice(0,160))}})})
     .then(function(data){
       var urls=(data&&Array.isArray(data.urls))?data.urls:(data&&data.url?[data.url]:[]);
       urls=urls.filter(Boolean);
@@ -481,7 +481,7 @@ function renderCarousel(){
     var card=document.createElement('div');card.className='ccard';
     card.innerHTML='<img src="" alt="'+esc(p.name)+'" loading="lazy"><div class="cname">'+esc(p.name)+'</div><div class="cprice">'+p.pts+' BUY points</div><button>Buy</button>';
     var img=card.querySelector('img');
-    fetch('/api/image?q='+encodeURIComponent(p.q)).then(function(r){return r.json()}).then(function(d){if(d&&d.url)img.src=d.url}).catch(function(){});
+    fetch('/api/image?q='+encodeURIComponent(p.q)).then(function(r){return r.text().then(function(t){try{return JSON.parse(t)}catch(e){return {}}})}).then(function(d){if(d&&d.url)img.src=d.url}).catch(function(){});
     card.querySelector('button').onclick=function(){
       bpSet(bpGet()+p.pts);fireBurst();
       this.textContent='Bought ✓';this.disabled=true;
