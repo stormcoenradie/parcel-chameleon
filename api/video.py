@@ -1,6 +1,25 @@
-import json, urllib.parse
+import json, re, ssl, urllib.parse, urllib.request
 from http.server import BaseHTTPRequestHandler
-from _utils import search_youtube
+
+def _ctx():
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    return ctx
+
+def search_youtube(q):
+    if not q:
+        return None
+    url = "https://www.youtube.com/results?search_query=" + urllib.parse.quote(q)
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    ctx = _ctx()
+    try:
+        with urllib.request.urlopen(req, timeout=10, context=ctx) as r:
+            html = r.read().decode("utf-8", "ignore")
+    except Exception:
+        return None
+    m = re.search(r'"videoId":"([A-Za-z0-9_-]{11})"', html)
+    return m.group(1) if m else None
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
